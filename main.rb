@@ -82,7 +82,9 @@ def faye
     EM.add_periodic_timer(5) do
       next if battle_state.empty?
 
-      pokemon_showdown_ws.send("#{battle_state[:battle_id]}|/choose default")
+      command = "#{battle_state[:battle_id]}|/choose default"
+      puts "~~~COMMAND_TO_SEND~~~: #{command}"
+      pokemon_showdown_ws.send(command)
     end
   end
 end
@@ -91,7 +93,8 @@ def async
   poke_user = 'asyncruby'
   poke_pass = 'wearenice'
   battle_state = {}
-  endpoint = Async::HTTP::Endpoint.parse('wss://sim3.psim.us/showdown/websocket')
+  endpoint = Async::HTTP::Endpoint.parse('wss://sim3.psim.us/showdown/websocket',
+                                         alpn_protocols: Async::HTTP::Protocol::HTTP11.names)
 
   Async do |task|
     Async::WebSocket::Client.connect(endpoint) do |connection|
@@ -101,7 +104,9 @@ def async
 
           next if battle_state.empty?
 
-          battle_message = Protocol::WebSocket::TextMessage.generate("#{battle_state[:battle_id]}|/choose default")
+          command = "#{battle_state[:battle_id]}|/choose default"
+          puts "~~~COMMAND_TO_SEND~~~: #{command}"
+          battle_message = Protocol::WebSocket::TextMessage.generate(command)
           battle_message.send(connection)
           connection.flush
         end
@@ -165,3 +170,4 @@ def async
 end
 
 # run the faye or async functions here
+faye
